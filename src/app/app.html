@@ -3,18 +3,23 @@
     <div>
       <p class="eyebrow">TUBEMAP · GRAAFDEMO</p>
       <h1>Een netwerk in beeld</h1>
-      <p class="intro">
-        Een voorbeeldgraaf met stations als punten en routes als verbindingen.
-      </p>
+      <p class="intro">Beschrijf een netwerk met punten en verbindingen.</p>
     </div>
     <div class="graph-summary" aria-label="Graafsamenvatting">
-      <span><strong>{{ graph.nodes.length }}</strong> punten</span>
+      <span
+        ><strong>{{ graph().nodes.length }}</strong> punten</span
+      >
       <span class="summary-divider" aria-hidden="true"></span>
-      <span><strong>{{ graph.connections.length }}</strong> verbindingen</span>
+      <span
+        ><strong>{{ graph().connections.length }}</strong> verbindingen</span
+      >
     </div>
   </header>
 
-  <section class="graph-panel" aria-label="Voorbeeldgraaf">
-    <app-graph-visualization [layout]="layout" />
-  </section>
+  <div class="workspace">
+    <app-graph-text-editor [text]="graphText()" (textChange)="graphText.set($event)" />
+    <section class="graph-panel" aria-label="Graafweergave">
+      <app-graph-visualization [layout]="layout()" />
+    </section>
+  </div>
 </main>

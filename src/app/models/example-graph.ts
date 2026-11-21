@@ -1,5 +1,20 @@
 import { Graph, GraphConnection, GraphNode } from './graph';
 
+export const exampleGraphText = [
+  ['Centraal', 'Museumkwartier'],
+  ['Centraal', 'Noord'],
+  ['Centraal', 'Haven'],
+  ['Museumkwartier', 'Parklaan'],
+  ['Parklaan', 'Universiteit'],
+  ['Universiteit', 'Zuid'],
+  ['Zuid', 'Haven'],
+  ['Haven', 'Westpoort'],
+  ['Westpoort', 'Noord'],
+  ['Noord', 'Parklaan'],
+]
+  .map((route) => route.join('\n'))
+  .join('\n\n');
+
 export const exampleGraph = new Graph(
   [
     new GraphNode('centraal', 'Centraal'),
