@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Graph, GraphConnection, GraphNode } from '../models/graph';
+import { parseGraphText } from '../models/graph-text';
 import { DagreGraphLayoutService } from './dagre-graph-layout.service';
 
 describe('DagreGraphLayoutService', () => {
@@ -58,14 +59,8 @@ describe('DagreGraphLayoutService', () => {
 
     const layout = service.createLayout(graph);
     const [forward, reverse] = layout.lines;
-    const distanceAtAlpha = Math.hypot(
-      forward.x1 - reverse.x2,
-      forward.y1 - reverse.y2,
-    );
-    const distanceAtBeta = Math.hypot(
-      forward.x2 - reverse.x1,
-      forward.y2 - reverse.y1,
-    );
+    const distanceAtAlpha = Math.hypot(forward.x1 - reverse.x2, forward.y1 - reverse.y2);
+    const distanceAtBeta = Math.hypot(forward.x2 - reverse.x1, forward.y2 - reverse.y1);
 
     expect(distanceAtAlpha).toBeCloseTo(3);
     expect(distanceAtBeta).toBeCloseTo(3);
@@ -88,6 +83,40 @@ describe('DagreGraphLayoutService', () => {
     const points = new Map(layout.points.map((point) => [point.id, point]));
 
     expect(points.get('y')?.y).toBeLessThan(points.get('x')?.y ?? 0);
+  });
+
+  it('straightens a route when its points need only small vertical adjustments', () => {
+    const graph = new Graph(
+      [
+        new GraphNode('a', 'Alpha'),
+        new GraphNode('b', 'Beta'),
+        new GraphNode('c', 'Gamma'),
+        new GraphNode('x', 'X-ray'),
+        new GraphNode('y', 'Yankee'),
+      ],
+      [
+        new GraphConnection('ab', 'a', 'b', '#B36305', 'route-1', true, false),
+        new GraphConnection('bc', 'b', 'c', '#B36305', 'route-1', false, true),
+        new GraphConnection('xy', 'x', 'y'),
+      ],
+    );
+
+    const layout = service.createLayout(graph);
+    const points = new Map(layout.points.map((point) => [point.id, point]));
+
+    expect(points.get('a')?.y).toBe(points.get('b')?.y);
+    expect(points.get('b')?.y).toBe(points.get('c')?.y);
+    expect(points.get('a')?.y).not.toBe(points.get('x')?.y);
+  });
+
+  it('straightens a route through shared points when the adjustment is larger than 12 pixels', () => {
+    const graph = parseGraphText('A\nB\nC\n\n1\n2\nB\n\nB\nC\nD');
+
+    const layout = service.createLayout(graph);
+    const points = new Map(layout.points.map((point) => [point.name, point]));
+
+    expect(points.get('1')?.y).toBe(points.get('2')?.y);
+    expect(points.get('2')?.y).toBe(points.get('B')?.y);
   });
 
   it('returns an empty layout for an empty graph', () => {

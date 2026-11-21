@@ -15,6 +15,8 @@ export class DagreGraphLayoutService {
   private readonly rankSeparation = 96;
   private readonly nodeSeparation = 48;
   private readonly nodeHeight = 48;
+  private readonly maximumStraighteningAdjustment = this.nodeSeparation / 2;
+  private readonly minimumStraightenedNodeGap = this.nodeHeight / 2;
 
   createLayout(graph: Graph): GraphLayout {
     const nodeById = new Map(graph.nodes.map((node) => [node.id, node]));
@@ -88,6 +90,8 @@ export class DagreGraphLayoutService {
         );
       });
     }
+
+    this.straightenRoutes(graph, ranks, pointsById);
 
     const points = graph.nodes.map((node) => {
       const point = pointsById.get(node.id);
@@ -196,6 +200,126 @@ export class DagreGraphLayoutService {
     }
 
     return ranks;
+  }
+
+  private straightenRoutes(
+    graph: Graph,
+    ranks: Map<string, number>,
+    pointsById: Map<string, GraphLayoutPoint>,
+  ): void {
+    const connectionsByRoute = new Map<string, GraphConnection[]>();
+    const routesByNode = new Map<string, Set<string>>();
+
+    for (const connection of graph.connections) {
+      const membership = connection.routeId
+        ? `route:${connection.routeId}`
+        : `connection:${connection.id}`;
+      for (const nodeId of [connection.from, connection.to]) {
+        const routes = routesByNode.get(nodeId) ?? new Set<string>();
+        routes.add(membership);
+        routesByNode.set(nodeId, routes);
+      }
+
+      if (connection.routeId) {
+        const routeConnections = connectionsByRoute.get(connection.routeId) ?? [];
+        routeConnections.push(connection);
+        connectionsByRoute.set(connection.routeId, routeConnections);
+      }
+    }
+
+    const routeEntries = [...connectionsByRoute.entries()]
+      .map(([routeId, connections]) => {
+        const nodeIds = new Set(connections.flatMap(({ from, to }) => [from, to]));
+        const adjustableNodeCount = [...nodeIds].filter((id) => {
+          const routes = routesByNode.get(id);
+          return routes?.size === 1 && routes.has(`route:${routeId}`);
+        }).length;
+        return { routeId, connections, adjustableNodeCount };
+      })
+      .sort((first, second) => second.adjustableNodeCount - first.adjustableNodeCount);
+
+    for (const { routeId, connections } of routeEntries) {
+      const firstConnection =
+        connections.find((connection) => connection.isRouteStart) ?? connections[0];
+      const routeNodeIds = [firstConnection.from, firstConnection.to];
+      const usedConnections = new Set([firstConnection]);
+
+      while (usedConnections.size < connections.length) {
+        const nextConnection = connections.find(
+          (connection) =>
+            !usedConnections.has(connection) &&
+            connection.from === routeNodeIds[routeNodeIds.length - 1],
+        );
+        if (!nextConnection) {
+          break;
+        }
+
+        usedConnections.add(nextConnection);
+        routeNodeIds.push(nextConnection.to);
+      }
+
+      if (
+        usedConnections.size !== connections.length ||
+        routeNodeIds.length < 3 ||
+        new Set(routeNodeIds).size !== routeNodeIds.length ||
+        new Set(routeNodeIds.map((id) => ranks.get(id))).size !== routeNodeIds.length
+      ) {
+        continue;
+      }
+
+      const routePoints = routeNodeIds.map((id) => pointsById.get(id));
+      if (routePoints.some((point) => point === undefined)) {
+        continue;
+      }
+
+      const adjustableNodeIds = routeNodeIds.filter((id) => {
+        const routes = routesByNode.get(id);
+        return routes?.size === 1 && routes.has(`route:${routeId}`);
+      });
+      if (adjustableNodeIds.length === 0) {
+        continue;
+      }
+
+      const anchorYs = routeNodeIds
+        .filter((id) => !adjustableNodeIds.includes(id))
+        .map((id) => pointsById.get(id)?.y ?? 0);
+      if (anchorYs.some((y) => y !== anchorYs[0])) {
+        continue;
+      }
+
+      const yPositions = adjustableNodeIds.map((id) => pointsById.get(id)?.y ?? 0);
+      const minimumY = Math.min(...yPositions);
+      const maximumY = Math.max(...yPositions);
+      const alignedY = anchorYs.length > 0 ? anchorYs[0] : (minimumY + maximumY) / 2;
+      if (yPositions.some((y) => Math.abs(y - alignedY) > this.maximumStraighteningAdjustment)) {
+        continue;
+      }
+
+      const routeNodeSet = new Set(routeNodeIds);
+      const wouldCrowdAnotherPoint = adjustableNodeIds.some((id) => {
+        const rank = ranks.get(id);
+        return graph.nodes.some((node) => {
+          if (routeNodeSet.has(node.id) || ranks.get(node.id) !== rank) {
+            return false;
+          }
+
+          const point = pointsById.get(node.id);
+          return (
+            point !== undefined && Math.abs(point.y - alignedY) < this.minimumStraightenedNodeGap
+          );
+        });
+      });
+      if (wouldCrowdAnotherPoint) {
+        continue;
+      }
+
+      for (const id of adjustableNodeIds) {
+        const point = pointsById.get(id);
+        if (point) {
+          pointsById.set(id, new GraphLayoutPoint(point.id, point.name, point.x, alignedY));
+        }
+      }
+    }
   }
 
   private createLayers(graph: Graph, ranks: Map<string, number>): string[][] {
