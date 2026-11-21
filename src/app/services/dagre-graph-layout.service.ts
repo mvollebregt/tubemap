@@ -106,6 +106,7 @@ export class DagreGraphLayoutService {
         from.y,
         to.x,
         to.y,
+        connection.color,
       );
     });
 

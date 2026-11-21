@@ -47,7 +47,10 @@ describe('App', () => {
     fixture.detectChanges();
 
     expect(compiled.querySelectorAll('.point')).toHaveLength(3);
-    expect(compiled.querySelectorAll('.connections line')).toHaveLength(2);
+    const lines = compiled.querySelectorAll<SVGLineElement>('.connections line');
+    expect(lines).toHaveLength(2);
+    expect(lines[0].style.stroke).toBe('rgb(179, 99, 5)');
+    expect(lines[1].style.stroke).toBe('rgb(227, 32, 23)');
     expect(compiled.querySelectorAll('.point[aria-label="Alpha"]')).toHaveLength(1);
   });
 });

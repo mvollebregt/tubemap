@@ -5,9 +5,11 @@ This project was generated using [Angular CLI](https://github.com/angular/angula
 ## Graafweergave
 
 De startpagina toont een voorbeeldgraaf met stations en verbindingen. De invoer staat
-in `src/app/models/graph.ts`; `GraphLayoutService` zet deze om naar punten met
-coördinaten en lijnen in `src/app/models/graph-layout.ts`. De layoutservice plaatst
-punten in een cirkel. `GraphVisualization` rendert de layout als een schaalbare SVG.
+in `src/app/models/example-graph.ts`. Zet één station per regel; iedere lege regel
+begint een nieuwe metrolijn. De verbindingen binnen een reeks delen een kleur uit de
+kleuren van de Londense metrokaart. `DagreGraphLayoutService` zet de graaf om naar
+punten met coördinaten en lijnen in `src/app/models/graph-layout.ts`.
+`GraphVisualization` rendert de layout als een schaalbare SVG.
 
 ## Development server
 

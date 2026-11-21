@@ -16,6 +16,7 @@ export class GraphLayoutLine {
     public readonly y1: number,
     public readonly x2: number,
     public readonly y2: number,
+    public readonly color?: string,
   ) {}
 }
 

@@ -13,7 +13,10 @@ describe('DagreGraphLayoutService', () => {
   it('places connected points in hierarchical ranks and matches line endpoints', () => {
     const graph = new Graph(
       [new GraphNode('a', 'Alpha'), new GraphNode('b', 'Beta'), new GraphNode('c', 'Gamma')],
-      [new GraphConnection('ab', 'a', 'b'), new GraphConnection('bc', 'b', 'c')],
+      [
+        new GraphConnection('ab', 'a', 'b', '#B36305'),
+        new GraphConnection('bc', 'b', 'c', '#E32017'),
+      ],
     );
 
     const layout = service.createLayout(graph);
@@ -26,7 +29,9 @@ describe('DagreGraphLayoutService', () => {
       y1: points.get('a')?.y,
       x2: points.get('b')?.x,
       y2: points.get('b')?.y,
+      color: '#B36305',
     });
+    expect(layout.lines[1].color).toBe('#E32017');
   });
 
   it('lays out cyclic graphs while retaining every connection', () => {

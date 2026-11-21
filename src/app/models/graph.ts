@@ -10,6 +10,7 @@ export class GraphConnection {
     public readonly id: string,
     public readonly from: string,
     public readonly to: string,
+    public readonly color?: string,
   ) {}
 }
 

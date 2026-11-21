@@ -28,4 +28,15 @@ describe('parseGraphText', () => {
     const graph = parseGraphText('Alpha\r\nBeta');
     expect(graph.connections).toHaveLength(1);
   });
+
+  it('uses one London Underground color per blank-line-separated route', () => {
+    const graph = parseGraphText('Alpha\nBeta\nGamma\n\nDelta\nEpsilon\n\nZeta\nEta');
+
+    expect(graph.connections.map(({ color }) => color)).toEqual([
+      '#B36305',
+      '#B36305',
+      '#E32017',
+      '#FFD300',
+    ]);
+  });
 });

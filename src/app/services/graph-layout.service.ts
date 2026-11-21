@@ -48,6 +48,7 @@ export class GraphLayoutService {
         from.y,
         to.x,
         to.y,
+        connection.color,
       );
     });
 
