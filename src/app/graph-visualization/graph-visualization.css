@@ -10,13 +10,11 @@
 
 .connections line {
   stroke: #b7c8bb;
-  stroke-linecap: round;
   stroke-width: 3;
 }
 
 .point-tick {
   stroke: #000;
-  stroke-linecap: round;
   stroke-width: 2;
 }
 

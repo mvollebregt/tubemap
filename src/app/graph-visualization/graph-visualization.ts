@@ -106,8 +106,8 @@ export class GraphVisualization {
         }
       }
 
-      const tickLength = 8;
-      const tickStep = 4;
+      const tickLength = 3;
+      const tickStep = tickLength / 2;
       const ticks: StationMarker['ticks'] =
         directions.length > 1
           ? []
