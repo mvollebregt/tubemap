@@ -1,0 +1,33 @@
+<svg
+  class="graph"
+  [attr.viewBox]="'0 0 ' + layout().width + ' ' + layout().height"
+  role="img"
+  aria-label="Visualisatie van de graaf met punten en verbindingen"
+  xmlns="http://www.w3.org/2000/svg"
+>
+  <g class="connections" aria-hidden="true">
+    @for (line of layout().lines; track line.id) {
+      <line
+        [attr.x1]="line.x1"
+        [attr.y1]="line.y1"
+        [attr.x2]="line.x2"
+        [attr.y2]="line.y2"
+      />
+    }
+  </g>
+
+  <g class="points">
+    @for (point of layout().points; track point.id) {
+      <g
+        class="point"
+        [attr.transform]="'translate(' + point.x + ' ' + point.y + ')'"
+        role="img"
+        [attr.aria-label]="point.name"
+      >
+        <circle class="point-halo" r="13" />
+        <circle class="point-marker" r="7" />
+        <text y="27">{{ point.name }}</text>
+      </g>
+    }
+  </g>
+</svg>

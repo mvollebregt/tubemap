@@ -2,6 +2,13 @@
 
 This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.3.0.
 
+## Graafweergave
+
+De startpagina toont een voorbeeldgraaf met stations en verbindingen. De invoer staat
+in `src/app/models/graph.ts`; `GraphLayoutService` zet deze om naar punten met
+coördinaten en lijnen in `src/app/models/graph-layout.ts`. De layoutservice plaatst
+punten in een cirkel. `GraphVisualization` rendert de layout als een schaalbare SVG.
+
 ## Development server
 
 To start a local development server, run:

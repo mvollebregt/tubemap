@@ -1,0 +1,33 @@
+:host {
+  display: block;
+}
+
+.graph {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.connections line {
+  stroke: #b7c8bb;
+  stroke-linecap: round;
+  stroke-width: 3;
+}
+
+.point-halo {
+  fill: #e7f1e8;
+}
+
+.point-marker {
+  fill: #368b59;
+  stroke: #fff;
+  stroke-width: 2;
+}
+
+.point text {
+  fill: #34473a;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-anchor: middle;
+}
