@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { GraphVisualization } from './graph-visualization/graph-visualization';
 import { exampleGraph } from './models/example-graph';
-import { GraphLayoutService } from './services/graph-layout.service';
+import { DagreGraphLayoutService } from './services/dagre-graph-layout.service';
 
 @Component({
   imports: [GraphVisualization],
@@ -11,6 +11,6 @@ import { GraphLayoutService } from './services/graph-layout.service';
 })
 export class App {
   protected readonly graph = exampleGraph;
-  private readonly graphLayoutService = inject(GraphLayoutService);
+  private readonly graphLayoutService = inject(DagreGraphLayoutService);
   protected readonly layout = this.graphLayoutService.createLayout(this.graph);
 }
