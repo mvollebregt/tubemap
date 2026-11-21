@@ -38,5 +38,17 @@ describe('parseGraphText', () => {
       '#E32017',
       '#FFD300',
     ]);
+    expect(
+      graph.connections.map(({ routeId, isRouteStart, isRouteEnd }) => [
+        routeId,
+        isRouteStart,
+        isRouteEnd,
+      ]),
+    ).toEqual([
+      ['route-0', true, false],
+      ['route-0', false, true],
+      ['route-1', true, true],
+      ['route-2', true, true],
+    ]);
   });
 });

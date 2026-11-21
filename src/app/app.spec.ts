@@ -22,7 +22,7 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Een netwerk in beeld');
-    expect(compiled.querySelectorAll('.point-tick, .point-interchange')).toHaveLength(8);
+    expect(compiled.querySelectorAll('.point')).toHaveLength(8);
     expect(compiled.querySelectorAll('.connections line')).toHaveLength(10);
 
     const expectedGraph = parseGraphText(exampleGraphText);
@@ -68,11 +68,37 @@ describe('App', () => {
     fixture.detectChanges();
 
     const straightPoint = compiled.querySelector('.point[aria-label="Beta"]');
-    const straightTick = straightPoint?.querySelector('.point-tick');
-    expect(straightTick).not.toBeNull();
-    expect(Number(straightTick?.getAttribute('y2'))).toBeGreaterThan(0);
+    const straightTicks = straightPoint?.querySelectorAll<SVGLineElement>('.point-tick');
+    expect(straightTicks).toHaveLength(1);
+    expect(Number(straightTicks?.[0].getAttribute('y1'))).toBe(0);
+    expect(Number(straightTicks?.[0].getAttribute('y2'))).toBeGreaterThan(0);
+    expect(straightTicks?.[0].style.stroke).toBe('rgb(179, 99, 5)');
     expect(straightPoint?.querySelector('.point-interchange')).toBeNull();
     expect(Number(straightPoint?.querySelector('text')?.getAttribute('y'))).toBeGreaterThan(0);
+
+    const routeStart = compiled.querySelector('.point[aria-label="Alpha"]');
+    const endpointTicks = routeStart?.querySelectorAll<SVGLineElement>('.point-tick');
+    expect(endpointTicks).toHaveLength(2);
+    expect(Number(endpointTicks?.[0].getAttribute('y2'))).toBeLessThan(0);
+    expect(Number(endpointTicks?.[1].getAttribute('y2'))).toBeGreaterThan(0);
+
+    textarea.value = 'Alpha\nBeta\n\nAlpha\nBeta';
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    const parallelPoint = compiled.querySelector('.point[aria-label="Alpha"]');
+    const parallelTicks = parallelPoint?.querySelectorAll<SVGLineElement>('.point-tick');
+    expect(parallelTicks).toHaveLength(4);
+    const positiveParallelTicks = [...(parallelTicks ?? [])].filter(
+      (tick) => Number(tick.getAttribute('y2')) > 0,
+    );
+    expect(positiveParallelTicks).toHaveLength(2);
+    expect(positiveParallelTicks[0].style.stroke).toBe('rgb(179, 99, 5)');
+    expect(positiveParallelTicks[0].getAttribute('y1')).toBe('0');
+    expect(positiveParallelTicks[0].getAttribute('y2')).toBe('8');
+    expect(positiveParallelTicks[1].style.stroke).toBe('rgb(227, 32, 23)');
+    expect(positiveParallelTicks[1].getAttribute('y1')).toBe('4');
+    expect(positiveParallelTicks[1].getAttribute('y2')).toBe('12');
 
     textarea.value = 'Alpha\nBeta\nGamma\n\nBeta\nDelta';
     textarea.dispatchEvent(new Event('input', { bubbles: true }));

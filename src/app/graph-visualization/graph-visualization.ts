@@ -7,8 +7,14 @@ interface StationMarker {
   x: number;
   y: number;
   type: 'tick' | 'interchange';
-  tickX: number;
-  tickY: number;
+  ticks: Array<{
+    id: string;
+    color?: string;
+    x1: number;
+    y1: number;
+    x2: number;
+    y2: number;
+  }>;
   labelX: number;
   labelY: number;
   labelAnchor: 'start' | 'middle' | 'end';
@@ -29,17 +35,31 @@ export class GraphVisualization {
     points: GraphLayoutPoint[],
     lines: GraphLayoutLine[],
   ): StationMarker[] {
-    const linesByPoint = new Map<string, GraphLayoutLine[]>();
+    const linesByPoint = new Map<
+      string,
+      Array<{ line: GraphLayoutLine; isRouteEndpoint: boolean }>
+    >();
     for (const line of lines) {
-      linesByPoint.set(line.from, [...(linesByPoint.get(line.from) ?? []), line]);
+      const fromLines = linesByPoint.get(line.from) ?? [];
+      fromLines.push({
+        line,
+        isRouteEndpoint: line.routeId === undefined || line.isRouteStart,
+      });
+      linesByPoint.set(line.from, fromLines);
       if (line.to !== line.from) {
-        linesByPoint.set(line.to, [...(linesByPoint.get(line.to) ?? []), line]);
+        const toLines = linesByPoint.get(line.to) ?? [];
+        toLines.push({
+          line,
+          isRouteEndpoint: line.routeId === undefined || line.isRouteEnd,
+        });
+        linesByPoint.set(line.to, toLines);
       }
     }
 
     return points.map((point) => {
       const directions: Array<{ x: number; y: number }> = [];
-      for (const line of linesByPoint.get(point.id) ?? []) {
+      const incidentLines = linesByPoint.get(point.id) ?? [];
+      for (const { line } of incidentLines) {
         let dx = line.x2 - line.x1;
         let dy = line.y2 - line.y1;
         if (line.from > line.to) {
@@ -68,6 +88,53 @@ export class GraphVisualization {
       const normalX = -direction.y;
       const normalY = direction.x;
       const labelDistance = 17;
+      const routesAtPoint = new Map<string, { color?: string; isEndpoint: boolean }>();
+      for (const { line, isRouteEndpoint } of incidentLines) {
+        if (Math.hypot(line.x2 - line.x1, line.y2 - line.y1) === 0) {
+          continue;
+        }
+
+        const routeId = line.routeId ?? line.id;
+        const route = routesAtPoint.get(routeId);
+        if (route) {
+          route.isEndpoint ||= isRouteEndpoint;
+        } else {
+          routesAtPoint.set(routeId, {
+            color: line.color,
+            isEndpoint: isRouteEndpoint,
+          });
+        }
+      }
+
+      const tickLength = 8;
+      const tickStep = 4;
+      const ticks: StationMarker['ticks'] =
+        directions.length > 1
+          ? []
+          : [...routesAtPoint.entries()].flatMap(([routeId, route], index) => {
+              const offset = index * tickStep;
+              const createTick = (side: number, suffix: string) => ({
+                id: `${routeId}-${suffix}`,
+                color: route.color,
+                x1: normalX * side * offset,
+                y1: normalY * side * offset,
+                x2: normalX * side * (offset + tickLength),
+                y2: normalY * side * (offset + tickLength),
+              });
+
+              return route.isEndpoint
+                ? [createTick(-1, 'left'), createTick(1, 'right')]
+                : [createTick(1, 'single')];
+            });
+      if (ticks.length === 0 && directions.length <= 1) {
+        ticks.push({
+          id: `${point.id}-tick`,
+          x1: 0,
+          y1: 0,
+          x2: normalX * tickLength,
+          y2: normalY * tickLength,
+        });
+      }
 
       return {
         id: point.id,
@@ -75,8 +142,7 @@ export class GraphVisualization {
         x: point.x,
         y: point.y,
         type: directions.length > 1 ? 'interchange' : 'tick',
-        tickX: normalX * 8,
-        tickY: normalY * 8,
+        ticks,
         labelX: normalX * labelDistance,
         labelY: normalY * labelDistance + (normalY >= 0 ? 4 : -4),
         labelAnchor: normalX > 0.35 ? 'start' : normalX < -0.35 ? 'end' : 'middle',

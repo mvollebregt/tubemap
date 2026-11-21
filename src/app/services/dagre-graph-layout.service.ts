@@ -112,6 +112,9 @@ export class DagreGraphLayoutService {
         to.x,
         to.y,
         connection.color,
+        connection.routeId,
+        connection.isRouteStart,
+        connection.isRouteEnd,
       );
     });
 

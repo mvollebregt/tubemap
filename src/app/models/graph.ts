@@ -11,6 +11,9 @@ export class GraphConnection {
     public readonly from: string,
     public readonly to: string,
     public readonly color?: string,
+    public readonly routeId?: string,
+    public readonly isRouteStart = false,
+    public readonly isRouteEnd = false,
   ) {}
 }
 

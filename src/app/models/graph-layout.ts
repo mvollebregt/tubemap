@@ -17,6 +17,9 @@ export class GraphLayoutLine {
     public readonly x2: number,
     public readonly y2: number,
     public readonly color?: string,
+    public readonly routeId?: string,
+    public readonly isRouteStart = false,
+    public readonly isRouteEnd = false,
   ) {}
 }
 
@@ -67,6 +70,9 @@ export function separateParallelLines(
         line.x2 + normalX * offset,
         line.y2 + normalY * offset,
         line.color,
+        line.routeId,
+        line.isRouteStart,
+        line.isRouteEnd,
       );
     });
   }

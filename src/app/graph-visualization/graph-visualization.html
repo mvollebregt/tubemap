@@ -26,7 +26,16 @@
         [attr.aria-label]="point.name"
       >
         @if (point.type === 'tick') {
-          <line class="point-tick" x1="0" y1="0" [attr.x2]="point.tickX" [attr.y2]="point.tickY" />
+          @for (tick of point.ticks; track tick.id) {
+            <line
+              class="point-tick"
+              [attr.x1]="tick.x1"
+              [attr.y1]="tick.y1"
+              [attr.x2]="tick.x2"
+              [attr.y2]="tick.y2"
+              [style.stroke]="tick.color"
+            />
+          }
         } @else {
           <circle class="point-interchange" r="6" />
         }

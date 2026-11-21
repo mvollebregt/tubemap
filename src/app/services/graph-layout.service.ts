@@ -16,7 +16,7 @@ export class GraphLayoutService {
   createLayout(graph: Graph): GraphLayout {
     const nodeById = new Map(graph.nodes.map((node) => [node.id, node]));
     if (nodeById.size !== graph.nodes.length) {
-      throw new Error('Een graaf mag geen dubbele punt-ID\'s bevatten.');
+      throw new Error("Een graaf mag geen dubbele punt-ID's bevatten.");
     }
 
     const centerX = this.width / 2;
@@ -36,9 +36,7 @@ export class GraphLayoutService {
       const from = pointById.get(connection.from);
       const to = pointById.get(connection.to);
       if (!from || !to) {
-        throw new Error(
-          `Verbinding "${connection.id}" verwijst naar een onbekend punt.`,
-        );
+        throw new Error(`Verbinding "${connection.id}" verwijst naar een onbekend punt.`);
       }
 
       return new GraphLayoutLine(
@@ -50,6 +48,9 @@ export class GraphLayoutService {
         to.x,
         to.y,
         connection.color,
+        connection.routeId,
+        connection.isRouteStart,
+        connection.isRouteEnd,
       );
     });
 

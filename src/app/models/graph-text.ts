@@ -18,17 +18,37 @@ export function parseGraphText(text: string): Graph {
   const nodes: GraphNode[] = [];
   const connections: GraphConnection[] = [];
   const nodeIdByLabel = new Map<string, string>();
-  let previousNodeId: string | undefined;
-  let routeIndex = -1;
+  let routeNodeIds: string[] = [];
+  let routeIndex = 0;
+
+  const finishRoute = (): void => {
+    if (routeNodeIds.length === 0) {
+      return;
+    }
+
+    const color = londonUndergroundColors[routeIndex % londonUndergroundColors.length];
+    for (let index = 0; index < routeNodeIds.length - 1; index += 1) {
+      connections.push(
+        new GraphConnection(
+          `connection-${connections.length + 1}`,
+          routeNodeIds[index],
+          routeNodeIds[index + 1],
+          color,
+          `route-${routeIndex}`,
+          index === 0,
+          index === routeNodeIds.length - 2,
+        ),
+      );
+    }
+
+    routeIndex += 1;
+    routeNodeIds = [];
+  };
 
   for (const label of text.split(/\r\n?|\n/)) {
     if (label.length === 0) {
-      previousNodeId = undefined;
+      finishRoute();
       continue;
-    }
-
-    if (previousNodeId === undefined) {
-      routeIndex += 1;
     }
 
     let nodeId = nodeIdByLabel.get(label);
@@ -37,19 +57,9 @@ export function parseGraphText(text: string): Graph {
       nodeIdByLabel.set(label, nodeId);
       nodes.push(new GraphNode(nodeId, label));
     }
-
-    if (previousNodeId !== undefined) {
-      connections.push(
-        new GraphConnection(
-          `connection-${connections.length + 1}`,
-          previousNodeId,
-          nodeId,
-          londonUndergroundColors[routeIndex % londonUndergroundColors.length],
-        ),
-      );
-    }
-    previousNodeId = nodeId;
+    routeNodeIds.push(nodeId);
   }
 
+  finishRoute();
   return new Graph(nodes, connections);
 }
