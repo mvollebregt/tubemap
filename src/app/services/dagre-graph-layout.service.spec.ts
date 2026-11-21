@@ -47,6 +47,32 @@ describe('DagreGraphLayoutService', () => {
     expect(layout.points[0].x).not.toBe(layout.points[1].x);
   });
 
+  it('places parallel connections side by side even when one is reversed', () => {
+    const graph = new Graph(
+      [new GraphNode('a', 'Alpha'), new GraphNode('b', 'Beta')],
+      [
+        new GraphConnection('ab', 'a', 'b', '#B36305'),
+        new GraphConnection('ba', 'b', 'a', '#E32017'),
+      ],
+    );
+
+    const layout = service.createLayout(graph);
+    const [forward, reverse] = layout.lines;
+    const distanceAtAlpha = Math.hypot(
+      forward.x1 - reverse.x2,
+      forward.y1 - reverse.y2,
+    );
+    const distanceAtBeta = Math.hypot(
+      forward.x2 - reverse.x1,
+      forward.y2 - reverse.y1,
+    );
+
+    expect(distanceAtAlpha).toBeCloseTo(3);
+    expect(distanceAtBeta).toBeCloseTo(3);
+    expect(forward.color).toBe('#B36305');
+    expect(reverse.color).toBe('#E32017');
+  });
+
   it('orders adjacent layers to reduce edge crossings', () => {
     const graph = new Graph(
       [

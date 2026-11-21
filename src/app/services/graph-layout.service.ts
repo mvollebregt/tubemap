@@ -4,6 +4,7 @@ import {
   GraphLayout,
   GraphLayoutLine,
   GraphLayoutPoint,
+  separateParallelLines,
 } from '../models/graph-layout';
 
 @Injectable({ providedIn: 'root' })
@@ -52,6 +53,6 @@ export class GraphLayoutService {
       );
     });
 
-    return new GraphLayout(this.width, this.height, points, lines);
+    return new GraphLayout(this.width, this.height, points, separateParallelLines(lines, 3));
   }
 }

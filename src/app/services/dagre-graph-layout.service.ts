@@ -1,6 +1,11 @@
 import { Injectable } from '@angular/core';
 import { Graph, GraphConnection } from '../models/graph';
-import { GraphLayout, GraphLayoutLine, GraphLayoutPoint } from '../models/graph-layout';
+import {
+  GraphLayout,
+  GraphLayoutLine,
+  GraphLayoutPoint,
+  separateParallelLines,
+} from '../models/graph-layout';
 
 @Injectable({ providedIn: 'root' })
 export class DagreGraphLayoutService {
@@ -110,7 +115,7 @@ export class DagreGraphLayoutService {
       );
     });
 
-    return new GraphLayout(width, height, points, lines);
+    return new GraphLayout(width, height, points, separateParallelLines(lines, 3));
   }
 
   private getOutgoingConnections(graph: Graph): Map<string, GraphConnection[]> {
