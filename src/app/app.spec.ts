@@ -22,8 +22,8 @@ describe('App', () => {
     await fixture.whenStable();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.querySelector('h1')?.textContent).toContain('Een netwerk in beeld');
-    expect(compiled.querySelectorAll('app-graph-visualization circle.point-marker').length).toBe(8);
-    expect(compiled.querySelectorAll('app-graph-visualization line').length).toBe(10);
+    expect(compiled.querySelectorAll('.point-tick, .point-interchange')).toHaveLength(8);
+    expect(compiled.querySelectorAll('.connections line')).toHaveLength(10);
 
     const expectedGraph = parseGraphText(exampleGraphText);
     const expectedLayout = TestBed.inject(DagreGraphLayoutService).createLayout(expectedGraph);
@@ -52,5 +52,34 @@ describe('App', () => {
     expect(lines[0].style.stroke).toBe('rgb(179, 99, 5)');
     expect(lines[1].style.stroke).toBe('rgb(227, 32, 23)');
     expect(compiled.querySelectorAll('.point[aria-label="Alpha"]')).toHaveLength(1);
+  });
+
+  it('uses ticks along a route and open circles where routes meet in different directions', async () => {
+    const fixture = TestBed.createComponent(App);
+    await fixture.whenStable();
+    const compiled = fixture.nativeElement as HTMLElement;
+    const textarea = compiled.querySelector('textarea');
+    if (!(textarea instanceof HTMLTextAreaElement)) {
+      throw new Error('De graafinvoer moet een tekstveld bevatten.');
+    }
+
+    textarea.value = 'Alpha\nBeta\nGamma';
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    const straightPoint = compiled.querySelector('.point[aria-label="Beta"]');
+    const straightTick = straightPoint?.querySelector('.point-tick');
+    expect(straightTick).not.toBeNull();
+    expect(Number(straightTick?.getAttribute('y2'))).toBeGreaterThan(0);
+    expect(straightPoint?.querySelector('.point-interchange')).toBeNull();
+    expect(Number(straightPoint?.querySelector('text')?.getAttribute('y'))).toBeGreaterThan(0);
+
+    textarea.value = 'Alpha\nBeta\nGamma\n\nBeta\nDelta';
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+    fixture.detectChanges();
+
+    const interchange = compiled.querySelector('.point[aria-label="Beta"]');
+    expect(interchange?.querySelector('.point-interchange')).not.toBeNull();
+    expect(interchange?.querySelector('.point-tick')).toBeNull();
   });
 });

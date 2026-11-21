@@ -18,16 +18,25 @@
   </g>
 
   <g class="points">
-    @for (point of layout().points; track point.id) {
+    @for (point of stationMarkers(); track point.id) {
       <g
         class="point"
         [attr.transform]="'translate(' + point.x + ' ' + point.y + ')'"
         role="img"
         [attr.aria-label]="point.name"
       >
-        <circle class="point-halo" r="13" />
-        <circle class="point-marker" r="7" />
-        <text y="27">{{ point.name }}</text>
+        @if (point.type === 'tick') {
+          <line class="point-tick" x1="0" y1="0" [attr.x2]="point.tickX" [attr.y2]="point.tickY" />
+        } @else {
+          <circle class="point-interchange" r="6" />
+        }
+        <text
+          [attr.x]="point.labelX"
+          [attr.y]="point.labelY"
+          [attr.text-anchor]="point.labelAnchor"
+        >
+          {{ point.name }}
+        </text>
       </g>
     }
   </g>

@@ -14,13 +14,15 @@
   stroke-width: 3;
 }
 
-.point-halo {
-  fill: #e7f1e8;
+.point-tick {
+  stroke: #000;
+  stroke-linecap: round;
+  stroke-width: 2;
 }
 
-.point-marker {
-  fill: #368b59;
-  stroke: #fff;
+.point-interchange {
+  fill: #fff;
+  stroke: #000;
   stroke-width: 2;
 }
 
